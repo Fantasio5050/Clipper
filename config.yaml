@@ -1,0 +1,61 @@
+# Configuration de Clipper.
+# Les clés secrètes vont dans .env, jamais ici.
+
+# Dossier où sont stockés vidéos, transcriptions, miniatures, rendus et la base SQLite.
+# Relatif au dossier de ce fichier.
+dossier_donnees: data
+
+# Dossier des prompts (modifiables sans toucher au code).
+dossier_prompts: prompts
+
+ingestion:
+  # Hauteur maximale téléchargée. Les clips sortent en 1080p : au-delà, on
+  # téléchargerait plus lourd pour rien.
+  hauteur_max: 1080
+  # Les vidéos plus courtes que ce seuil (en minutes) sont ignorées.
+  duree_min_source_min: 10
+  # Runtimes JavaScript que yt-dlp peut utiliser pour YouTube (deno, node, bun).
+  js_runtimes: [deno, node]
+  # Fichier cookies.txt (format Netscape) si YouTube demande une connexion. Vide = aucun.
+  cookies: ""
+
+transcription:
+  fournisseur: deepgram
+  modele: nova-3
+  langue: fr
+  # Tarif Deepgram en dollars par minute d'audio (sert à l'estimation des coûts).
+  # Vérifie-le sur ta facture : la diarisation peut être facturée en plus selon ton offre.
+  tarif_minute: 0.0043
+
+anthropic:
+  # URL de l'API, fixée ici pour ne pas dépendre d'une variable d'environnement.
+  base_url: https://api.anthropic.com
+  # Si Claude refuse une requête, l'API la relance automatiquement sur un modèle de repli.
+  repli_sur_refus: true
+  # Tarifs en dollars par million de jetons, pour l'estimation des coûts.
+  tarifs:
+    claude-sonnet-5-5: {entree: 2.00, sortie: 10.00}
+    claude-opus-5-5: {entree: 4.00, sortie: 20.00}
+    claude-haiku-5-5: {entree: 0.10, sortie: 0.50}
+
+selection:
+  modele: claude-sonnet-5-5
+  # Effort de réflexion : low, medium, high, xhigh, max.
+  effort: high
+  # Nombre de candidats demandés par vidéo.
+  nb_min: 5
+  nb_max: 15
+  # Durée visée des clips, en secondes.
+  duree_min_s: 120
+  duree_max_s: 300
+  # Chevauchement maximal entre deux clips (part du clip le plus court).
+  chevauchement_max: 0.20
+  # Au-delà de cette durée (en minutes), la transcription est découpée en blocs
+  # qui se recouvrent, puis les candidats sont fusionnés.
+  bloc_min: 60
+  recouvrement_min: 5
+
+execution:
+  # Nombre maximal de tentatives pour une vidéo en erreur avant abandon
+  # (relance possible avec `clipper run --forcer`).
+  tentatives_max: 3
